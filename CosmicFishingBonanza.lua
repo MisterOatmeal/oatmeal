@@ -90,29 +90,24 @@ local presetMap = {
 
 import("System.Numerics")
 
--- Fishing Holes (Sinus Ardorum) and Vectors (for pathfinding)
+-- Fishing Holes (Sinus Ardorum) and Vectors / Routes (for pathfinding)
 
 local fishingHoles= {
-    ["Palus Arsenici"]       = { x = 561.7,  y = 51.1,  z = 533.1 , route = "SURF PALUS ASSINIRE 100% GUARANTEED" },    
-    ["Hollow Harbor"]        = { x = -561.5, y = 68.9,  z = -647.8, route = "BASE TO HOLLOW HARBOR 99% GUARANTEE SPECIAL" },
-    ["Northward Hop-print"]  = { x = -126.6, y = 19.8,  z = -267.9, route = "NORTH HOP-PRINT SURELY" },
-    ["Southeast Well"]       = { x = 182.8,  y = 17.5,  z = 191.5, route = "SURF TO THE WELL (SOUTHEAST) MAJOR BIGLY" },
-    ["Weeping Pool"]         = { x = 79.7,   y = 18.3,  z = -249.3, route = "YOSHIP'S CASUALS TEAR COLLECTION" },
-    ["Westward Hop-print"]   = { x = -257.8, y = 22.0,  z = -87.9, route = "OUEST HOP-PRANT" },
+    ["Palus Arsenici"]       = { x = 527.0,  y = 53.7,  z = 598.1 , route = "SURF PALUS ASSINIRE 100% GUARANTEED" },    
+    ["Hollow Harbor"]        = { x = -563.5, y = 69.1,  z = -647.4, route = "BASE TO HOLLOW HARBOR 99% GUARANTEE SPECIAL" },
+    ["Northward Hop-print"]  = { x = 918.3, y = -58.8,  z = -337.2, route = "NORTH HOP-PRINT SURELY" },
+    ["Southeast Well"]       = { x = 203.7,  y = 19.5,  z = 204.7, route = "SURF TO THE WELL (SOUTHEAST) MAJOR BIGLY" },
+    ["Weeping Pool"]         = { x = 70.5,   y = 26.0,  z = -307.1, route = "YOSHIP'S CASUALS TEAR COLLECTION" },
+    ["Westward Hop-print"]   = { x = -264.2, y = 22.4,  z = -96.1, route = "OUEST HOP-PRANT" },
     ["Glimmerpond Alpha"]    = { x = -688.1, y = 57.1,  z = 398.9, route = "GIGALPHAPOOCHAD" },
     ["Glimmerpond Beta"]     = { x = -357.5, y = 47.8,  z = 639.8, route = "GIGAPOOBETASISSY" },
-    ["Aetherial Falls"]      = { x = 921.4,  y = -59.0, z = -347.7, route = "REALLY???????? FUCK WATERFALLS" },
+    ["Aetherial Falls"]      = { x = 918.2,  y = -58.8, z = -337.2, route = "REALLY???????? FUCK WATERFALLS" },
     ["Critical_Drone_LOC"]  = { x = -124.4, y = 20.1, z = -286.3, route = "SUNKEN DRONK" },
     ["Critical_EdibleFish_LOC"] = { x = -297.8, y = 22.9, z = -95.5, route = "EDIBLE WHAT" },
     ["Critical_Drone_TurnIn"] = { route = "dead ai lol" },
     ["Critical_EdibleFish_TurnIn"] = { route = "mmmm edibles" },
 }
 
--- Notes: Well built for scalability, Needs testing. Visland routes developed for fishingholes, fallback coords.
-
--- Need to add coordinates for collection NPCs during critical missions.
-
--- Mission Library
 
 local FishingMissions = {
 
@@ -347,10 +342,8 @@ function IsCriticalMission(mission)
 end
 
 function GetDistanceToTarget(targetCoords)
-    local playerX = Player.Pos.x
-    local playerY = Player.Pos.y
-    local playerZ = Player.Pos.z
-    local distance = math.sqrt((playerX - targetCoords.x)^2 + (playerY - targetCoords.y)^2 + (playerZ - targetCoords.z)^2)
+    local playerPos = Svc.ClientState.LocalPlayer.Position
+    local distance = math.sqrt((playerPos.X - targetCoords.x)^2 + (playerPos.Y - targetCoords.y)^2 + (playerPos.Z - targetCoords.z)^2)
     return distance
 end
 
@@ -378,26 +371,25 @@ end
 -- PATHING TO FISHING LOCATION
 -- =========================================
 
-function MoveToTarget(holeName)
-    -- Find the data for the requested fishing hole
+function MoveToTarget(holeName, targetCoords)
     local holeData = fishingHoles[holeName]
 
-    -- Check if the hole from the mission associated with the new mission is different. (i.e. diff mission, diff hole))
     if holeData and holeData.route and holeData.route ~= "" then
         local routeName = holeData.route
         yield('/echo Moving to ' .. holeName .. ' using Visland route: ' .. routeName)
-        yield('/visland execonce "' .. routeName .. '"') -- Start the Visland route, do once
-        yield("/wait 0.5") -- A small wait for movement to start
-        while Player.IsMoving do
-            yield("/wait 0.5")
-        end
+        yield('/visland execonce ' .. routeName)
+
+    local distance = GetDistanceToTarget(targetCoords)
+    while distance > 5 do          
+        yield("/wait 1")
+        distance = GetDistanceToTarget(targetCoords)
+    end
+
         yield('/echo Arrived at ' .. holeName .. '.')
         return true
     else
-
-        yield('/echo ERROR: No Visland route found for Mission at "' .. holeName .. '". Stopping script.')
+        yield('/echo ERROR: No Visland route found for "' .. holeName .. '". Stopping script.')
         yield("/snd stop all")
-
         return false
     end
 end
@@ -407,19 +399,35 @@ end
 -- =========================================
 
 function PerformFishingMission(mission)
-    if IPC and IPC.AutoHook and IPC.AutoHook.SetPluginState then
-        IPC.AutoHook.SetPluginState(true)
+    if not mission.itemId then
+        yield("/echo Mission data is incomplete (missing itemId). Skipping.")
+        yield("/wait 3")
+        return
     end
-    while Inventory.GetItemCount(mission.itemId) < (mission.amount or 1) do
+
+    -- Use the IPC call to enable and start the AutoHook fishing process.
+    if IPC and IPC.AutoHook and IPC.AutoHook.SetPluginState then
+        yield("/echo Starting AutoHook via IPC...")
+        IPC.AutoHook.SetPluginState(true)
+    else
+        yield("/echo ERROR: Could not send command to AutoHook.")
+        yield("/snd stop all")
+        return
+    end
+
+    yield('/wait 1')
+  
+    -- Wait until the "Fishing" condition (43) is no longer active.
+    while Svc.Condition[43] do
         yield("/wait 1")
     end
 
-    -- Wait until not actively fishing (Condition[43] == false)
-    while Svc and Svc.Condition and Svc.Condition[43] do
-        yield("/wait 0.2")
+    -- Turn AutoHook OFF via IPC now that the work is done.
+    if IPC and IPC.AutoHook and IPC.AutoHook.SetPluginState then
+        IPC.AutoHook.SetPluginState(false)
     end
-
-    -- If still "locked" at water (passive), force stand up and wait
+    
+    -- Cleanup logic to ensure the character "stands up".
     if Svc and Svc.Condition and Svc.Condition[6] then
         yield("/ac quit")
         while Svc.Condition[6] do
@@ -431,25 +439,27 @@ function PerformFishingMission(mission)
 end
 
 function DoCraftingStep(mission)
-    -- Check mission crafting requirement. For my hybrids baby.
+    -- First, check if the mission requires crafting at all.
     if not mission.requiresCrafting then
         return
     end
 
-    EnsureMissionWindowOpen()
+    if not Addons.GetAddon("WKSRecipeNotebook").Ready then
+        if not Addons.GetAddon("WKSMissionInfomation").Ready then
+            yield("/callback WKSHud true 11")
+            yield("/wait 0.2")
+        end
+        yield("/callback WKSMissionInfomation true 14 1")
+        yield("/wait 0.2")
+    end
 
-    yield("/wait 0.5")
-    yield("/click WKSMissionInfomation Synthesize")
     IPC.Artisan.SetEnduranceStatus(true)
-    yield("/wait 0.2")
 
-    while Svc and Svc.Condition and Svc.Condition[40] do
+    while IPC.Artisan.GetEnduranceStatus() == true do
         yield("/wait 0.5")
     end
-    while Svc and Svc.Condition and Svc.Condition[5] do
-        yield("/wait 0.5")
-    end
-    yield("/echo Crafting complete. Trust me, you dont want to submit it on this job. Artisanway is better for that.")
+
+    yield("/echo Craftingway complete.") 
 end
 
 -- =========================================
@@ -457,19 +467,22 @@ end
 -- =========================================
 
 function SubmitMission(mission)
-    
+
     EquipFisher()
+    yield("/wait 0.2")
 
     if IsCriticalMission(mission) then
-        MoveToTarget(mission.turnIn)
+        MoveToTarget(mission.turnIn, fishingHoles[mission.turnIn])
         yield('/target "Collection Point"')
-        yield("/wait 0.5")
         yield("/interact")
         yield("/wait 2")
     else
 
-        EnsureMissionWindowOpen()
-        yield("/click WKSMissionInfomation Report")
+        if not Addons.GetAddon("WKSMissionInfomation").Ready then
+            yield("/callback WKSHud true 11")
+            yield("/wait 0.2")
+        end
+        yield("/callback WKSMissionInfomation true 11 1")
         yield("/wait 1")
     end
 end
@@ -496,10 +509,10 @@ while true do
     local distance = GetDistanceToTarget(mission.coords)
 
     if distance > 5 then
-        yield('/echo You might have just gotten a newer, shittier mission. HAH! You are too far from target. Moving to next location.')
-        yield('/ac "Stellar Return"')
+        yield('/echo Moving to next location.')
+        yield('/ac "Duty Action I"')
         yield("/wait 10") -- Wait for teleport to complete
-        MoveToTarget(mission.hole)
+        MoveToTarget(mission.hole, mission.coords)
     end
 
     AutoHookPresetByMission(mission.id, mission.name)
@@ -508,5 +521,4 @@ while true do
     SubmitMission(mission)
     yield("/wait 2")
     ::continue::
-
 end
