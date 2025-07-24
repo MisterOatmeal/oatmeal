@@ -1,0 +1,523 @@
+ActionType
+Actions
+	CancelCast
+	ExecuteAction
+	ExecuteGeneralAction
+	GetActionInfo
+	Teleport
+	__mt
+		MetatableOnIndex
+		__index
+Addons
+	GetAddon
+	__mt
+		MetatableOnIndex
+		__index
+CLRPackage
+Config
+	Exists
+	Get
+	GetAllNames
+	GetBool
+	GetDefault
+	GetDescription
+	GetFloat
+	GetInt
+	GetString
+	GetType
+	Reset
+	Set
+	__mt
+		MetatableOnIndex
+		__index
+ContentType
+Dalamud
+	Log
+	LogDebug
+	LogVerbose
+	__mt
+		MetatableOnIndex
+		__index
+DynamicEventState
+Entity
+	GetAllianceMember
+	GetEntityByName
+	GetPartyMember
+	__mt
+		MetatableOnIndex
+		__index
+Excel
+	GetRow
+	GetSheet
+	GetSubRow
+	__mt
+		MetatableOnIndex
+		__index
+FateState
+Fates
+	GetActiveFates
+	GetFateById
+	GetNearestFate
+	__mt
+		MetatableOnIndex
+		__index
+GrandCompany
+IPC
+	ARDiscard
+		GetItemsToDiscard
+	Artisan
+		CraftItem
+		GetEnduranceStatus
+		GetStopRequest
+		IsListPaused
+		IsListRunning
+		SetEnduranceStatus
+		SetListPause
+		SetStopRequest
+	AutoDuty
+		ContentHasPath
+		GetConfig
+		IsLooping
+		IsNavigating
+		IsStopped
+		ListConfig
+		Run
+		SetConfig
+		Start
+		Stop
+	AutoHook
+		CreateAndSelectAnonymousPreset
+		DeleteAllAnonymousPresets
+		DeleteSelectedPreset
+		SetAutoGigSize
+		SetAutoGigSpeed
+		SetAutoGigState
+		SetPluginState
+		SetPreset
+	AutoRetainer
+		AbortAllTasks
+		AreAnyRetainersAvailableForCurrentChara
+		CanAutoLogin
+		DisableAllFunctions
+		EnableMultiMode
+		EnqueueHET
+		EnqueueInitiation
+		GetClosestRetainerVentureSecondsRemaining
+		GetEnabledRetainers
+		GetGCInfo
+		GetInventoryFreeSlotCount
+		GetMultiModeEnabled
+		GetOfflineCharacterData
+		GetOptionRetainerSense
+		GetOptionRetainerSenseThreshold
+		GetRegisteredCharacters
+		IsBusy
+		Relog
+		SetMultiModeEnabled
+		SetOptionRetainerSense
+		SetOptionRetainerSenseThreshold
+	Automaton
+		IsTweakEnabled
+		SetTweakState
+	BossMod
+		AddTransientStrategy
+		AddTransientStrategyTargetEnemyOID
+		ClearActive
+		Create
+		Delete
+		Get
+		GetActive
+		GetForceDisabled
+		SetActive
+		SetForceDisabled
+	Deliveroo
+		IsTurnInRunning
+	Dropbox
+		BeginTradingQueue
+		GetItemQuantity
+		IsBusy
+		SetItemQuantity
+		Stop
+	GetAvailablePlugins
+	InventoryTools
+		AddItemToCraftList
+		AddNewCraftList
+		CurrentCharacter
+		DisableBackgroundFilter
+		DisableCraftList
+		DisableUiFilter
+		EnableBackgroundFilter
+		EnableCraftList
+		EnableUiFilter
+		GetCharacterItems
+		GetCharacterItemsByType
+		GetCharactersOwnedByActive
+		GetCraftItems
+		GetCraftLists
+		GetFilterItems
+		GetRetrievalItems
+		GetSearchFilters
+		InventoryCountByType
+		InventoryCountByTypes
+		IsInitialized
+		ItemCount
+		ItemCountHQ
+		ItemCountOwned
+		RemoveItemFromCraftList
+		ToggleBackgroundFilter
+		ToggleCraftList
+		ToggleUiFilter
+	IsInstalled
+	Lifestream
+		Abort
+		AethernetTeleport
+		AethernetTeleportById
+		AethernetTeleportByPlaceNameId
+		AethernetTeleportToFirmament
+		CanChangeInstance
+		CanMoveToWorkshop
+		CanVisitCrossDC
+		CanVisitSameDC
+		ChangeInstance
+		ChangeWorld
+		ChangeWorldById
+		EnqueueInnShortcut
+		EnqueueLocalInnShortcut
+		EnterApartment
+		ExecuteCommand
+		GetActiveAetheryte
+		GetActiveResidentialAetheryte
+		GetCurrentInstance
+		GetNumberOfInstances
+		GetPlotEntrance
+		GetRealTerritoryType
+		GetWorldChangeAetheryteByTerritoryType
+		HasApartment
+		HasFreeCompanyHouse
+		HasPrivateHouse
+		HousingAethernetTeleportById
+		IsBusy
+		MoveToWorkshop
+		TPAndChangeWorld
+		Teleport
+		TeleportToApartment
+		TeleportToFC
+		TeleportToHome
+	PandorasBox
+		GetConfigEnabled
+		GetFeatureEnabled
+		PauseFeature
+		SetConfigEnabled
+		SetFeatureEnabled
+	Questionable
+		AddQuestPriority
+		ClearQuestPriority
+		ExportQuestPriority
+		GetCurrentQuestId
+		GetCurrentStepData
+		ImportQuestPriority
+		InsertQuestPriority
+		IsQuestLocked
+		IsRunning
+	TextAdvance
+		GetEnableAutoInteract
+		GetEnableCutsceneEsc
+		GetEnableCutsceneSkipConfirm
+		GetEnableQuestAccept
+		GetEnableQuestComplete
+		GetEnableRequestFill
+		GetEnableRequestHandin
+		GetEnableRewardPick
+		GetEnableTalkSkip
+		IsBusy
+		IsEnabled
+		IsInExternalControl
+		IsPaused
+		Stop
+	Tippy
+		RegisterMessage
+		RegisterTip
+	WrathCombo
+		GetAutoRotationConfigState
+		GetAutoRotationState
+		IsCurrentJobAutoRotationReady
+		RegisterForLeaseWithCallback
+		ReleaseControl
+		SetAutoRotationConfigState
+		SetAutoRotationState
+		SetCurrentJobAutoRotationReady
+	YesAlready
+		IsBotherEnabled
+		IsPluginEnabled
+		PauseBother
+		PausePlugin
+		SetBotherEnabled
+		SetPluginEnabled
+	visland
+		IsRoutePaused
+		IsRouteRunning
+		SetRoutePaused
+		StartRoute
+		StopRoute
+	vnavmesh
+		BuildProgress
+		IsReady
+		IsRunning
+		NearestPoint
+		Pathfind
+		PathfindAndMoveTo
+		PathfindInProgress
+		PointOnFloor
+		Rebuild
+		Reload
+		Stop
+InstancedContent
+	CanLeaveCurrentContent
+	GetCurrentContentId
+	GetCurrentContentType
+	LeaveCurrentContent
+	__mt
+		MetatableOnIndex
+		__index
+Instances
+	__mt
+		MetatableOnIndex
+		__index
+InternalGetMacroText
+Inventory
+	GetCollectableItemCount
+	GetFreeInventorySlots
+	GetHqItemCount
+	GetInventoryContainer
+	GetInventoryItem
+	GetItemCount
+	GetItemsInNeedOfRepairs
+	GetSpiritbondedItems
+	__mt
+		MetatableOnIndex
+		__index
+InventoryType
+NodeType
+ObjectKind
+Player
+	GetGearset
+	GetJob
+	__mt
+		MetatableOnIndex
+		__index
+Quests
+	GetAcceptedQuests
+	GetMonsterNoteRankInfo
+	GetQuestSequence
+	IsLeveAccepted
+	IsQuestAccepted
+	IsQuestComplete
+	__mt
+		MetatableOnIndex
+		__index
+Svc
+System
+	FlashIcon
+	GetClipboardText
+	SetClipboardText
+	__mt
+		MetatableOnIndex
+		__index
+WeeklyBingoTaskStatus
+_G
+_VERSION
+assert
+collectgarbage
+coroutine
+	close
+	create
+	isyieldable
+	resume
+	running
+	status
+	wrap
+	yield
+debug
+	debug
+	gethook
+	getinfo
+	getlocal
+	getmetatable
+	getregistry
+	getupvalue
+	getuservalue
+	setcstacklimit
+	sethook
+	setlocal
+	setmetatable
+	setupvalue
+	setuservalue
+	traceback
+	upvalueid
+	upvaluejoin
+dofile
+enhanced_error_handler
+entrypoint
+error
+f
+getmetatable
+import
+io
+	close
+	flush
+	input
+	lines
+	open
+	output
+	popen
+	read
+	stderr
+	stdin
+	stdout
+	tmpfile
+	type
+	write
+ipairs
+load
+loadfile
+luanet
+	.fqn
+	ctype
+	each
+	enum
+	error
+	free_object
+	get_constructor_bysig
+	get_method_bysig
+	get_object_member
+	getmetatable
+	import_type
+	load_assembly
+	make_array
+	make_object
+	namespace
+	type
+math
+	abs
+	acos
+	asin
+	atan
+	ceil
+	cos
+	deg
+	exp
+	floor
+	fmod
+	huge
+	log
+	max
+	maxinteger
+	min
+	mininteger
+	modf
+	pi
+	rad
+	random
+	randomseed
+	sin
+	sqrt
+	tan
+	tointeger
+	type
+	ult
+next
+os
+	clock
+	date
+	difftime
+	execute
+	exit
+	getenv
+	remove
+	rename
+	setlocale
+	time
+	tmpname
+package
+	config
+	cpath
+	loaded
+		_G
+		coroutine
+		debug
+		io
+		math
+		os
+		package
+		string
+			byte
+			char
+			dump
+			find
+			format
+			gmatch
+			gsub
+			len
+			lower
+			match
+			pack
+			packsize
+			rep
+			reverse
+			sub
+			unpack
+			upper
+		table
+			concat
+			insert
+			move
+			pack
+			remove
+			sort
+			unpack
+		utf8
+			char
+			charpattern
+			codepoint
+			codes
+			len
+			offset
+	loadlib
+	original_searchers
+		1
+		2
+		3
+		4
+	path
+	preload
+	searchers
+		1
+		2
+		3
+	searchpath
+pairs
+pcall
+print
+printAllGlobals
+rawequal
+rawget
+rawlen
+rawset
+require
+select
+setmetatable
+snd
+	require
+		add_paths
+		paths
+			1
+string
+table
+tonumber
+tostring
+type
+utf8
+warn
+writeToFile
+xpcall
+yield
