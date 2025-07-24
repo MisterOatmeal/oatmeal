@@ -1,0 +1,9 @@
+--- @class ActionWrapper
+--- @field AdjustedActionId number
+--- @field RecastTimeElapsed number
+--- @field RealRecastTimeElapsed number
+--- @field RecastTime number
+--- @field RealRecastTime number
+--- @field SpellCooldown number
+--- @field RealSpellCooldown number
+--- @field GetActionStatus fun(): number

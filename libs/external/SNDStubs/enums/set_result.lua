@@ -1,0 +1,28 @@
+-- Usage:
+-- luanet.load_assembly('SomethingNeedDoing')
+-- SetResult = luanet.import_type('SomethingNeedDoing.External.Wrath+SetResult')
+-- SetResult.Okay
+
+--- @alias SetResultValue
+---| 0 # Okay
+---| 1 # OkayWorking
+---| 10 # IPCDisabled
+---| 11 # InvalidLease
+---| 12 # BlacklistedLease
+---| 13 # Duplicate
+---| 14 # PlayerNotAvailable
+---| 15 # InvalidConfiguration
+---| 16 # InvalidValue
+---| -1 # IGNORED
+
+--- @class SetResult
+--- @field Okay SetResultValue
+--- @field OkayWorking SetResultValue
+--- @field IPCDisabled SetResultValue
+--- @field InvalidLease SetResultValue
+--- @field BlacklistedLease SetResultValue
+--- @field Duplicate SetResultValue
+--- @field PlayerNotAvailable SetResultValue
+--- @field InvalidConfiguration SetResultValue
+--- @field InvalidValue SetResultValue
+--- @field IGNORED SetResultValue

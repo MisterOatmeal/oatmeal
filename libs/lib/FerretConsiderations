@@ -1,0 +1,277 @@
+List of Helpers from Ferret That can and should be re-used:
+
+    * Class − A class is an extensible template for creating objects, providing initial values for state (member variables) and implementations of behavior.
+    > Create classes in lua through metamethods of tables. Metamethods are functions.
+
+    * objects = an instance of a class, a "metatable", different variables that serve as the foundation for a function (programmatic action)
+
+    > extensions = inherited subclass which calls the functions of their main class after performing a    function of their own, powerful inheritance tool.
+
+    * Addon = new class specific to ffxiv, they are essentially objects that are parsed for data and called to perform game actions (ui elements)
+
+    > an extention of an Addon would perform a test (function) and then call the parent Addon to perform an action via callback
+
+    * Encapsulation: Combining the data and functions of a class (object) into another class/subclass. Data can be encapsulated and then used as parameters for complex functions through encapsulation. Aka "Data Abstraction"
+
+========================================================================================
+
+========================================================================================
+Ferret Structure:
+
+    0. I think this is ferret requirements in a single place, basically what we need in this script
+
+        >> Ferret 0.12.1\lib\Ferret\CosmicExploration\Library.lua
+        >> Ferret\CosmicExploration\Data\Missions\SinusArdorum\FisherMissions.gen.lua
+
+    1. where do you start? -> data(). we have the recipe (1)
+
+        method: {data{mission shit, FFXIV addom UI data}} = \Ferret 0.12.1\lib\Ferret\CosmicExploration\Data
+        >> backdrop for all of the logic, the facts and the concrete in-game thing(s) and Object(s) that are interacted with a function
+        >> objects () level 1, simplefunctions() with {data} to find similarities that drive the core logic.
+
+    1.5. Templates that allow for best practices to be performed(1.5) in step (2)
+
+        >> method: \Ferret 0.12.1\lib\Ferret\CosmicExploration\Data
+        >> method: \Ferret 0.12.1\lib\Ferret\String.lua
+        >> method: \Ferret 0.12.1\lib\Ferret\Wait.lua
+        >> method: \Ferret 0.12.1\lib\Ferret\Extensions\AethericReduction.lua
+        >> Method: Ferret\CosmicExploration\Data\GatheringMissionHandler.lua -> this guy is powerful but doesnt loop
+
+
+    2. what is done with the data(1)
+
+        >> data is now structured() into components. the items to make the recipe. "elements" of Lua
+        >> this is a deceptively important thing. breaking your data into effective functions() = molecules that can be made with the ingredients.
+            |>> method: example molecute: Ferret 0.12.1\lib\Ferret\Pathfinding.lua
+            |>> method: libs\external\Ferret 0.12.1\lib\Ferret\CosmicExploration\Data\MissionList.lua
+            |>> Pathfinding is one of the pieces of the recipe. Its data, and its movement.
+                * pathfinding is not anything more than a molecule yet, though.
+                * because it doesnt control the main loop.
+                * it gives necessary information for "semi-actors" to use to do...
+
+        >> objects() level (2): functions("data") and metamethods (Object_oriented_programming)
+        >> this is where we start pulling() information from the {data} with metafunctions and inheritance, node scanning, not so much server.interaction()
+                * "fallbacks" here are the core. if they aren not sufficient() == good then, the script wont work or will run forever.
+                * good fallbacks
+
+
+    3. once the data is organize({metadata}) and basic if basic logic has been confirmed() then we have actors.
+        >> actors are the main do-ers of the script, sendingcommands() to the server via SND
+        >> with logic, they take the data and apply it to make final decisions that the Ferret.core integrates into the loop.
+            |>> without the actors, which give the loop information through another layer of functions() the Ferret.core cannot proceed.
+                * bugs come from different actors: verify the data() and your structure() if there are issues
+                * actors are the hardest part to code, because the (2) has to be solid and comprehensive.
+                * keeping everything modular allows for easier debugging, because you can put simple yield() or print() when something is working or return ing
+
+        >> objects() level (3): advanced functions() that collect and manage (2) to obtain facts for (4) without failing
+            |>> at this point, we are doing complex self and inheritance combinations to yield a desired result to perform the core logical test
+                * method: Ferret 0.12.1\lib\Ferret\RequestManager.lua Ferret 0.12.1\lib\Ferret\EventManager.lua
+                * method: Ferret 0.12.1\lib\Ferret\ExtensionManager.lua >> "big:actor(3)"
+                * method: Ferret 0.12.1\lib\Ferret\CosmicExploration\Addons\WKSHud.lua "biggest actor(3)"
+                * needs good fallbacks that give (2) another chance (to a point) before a soft fallback of time out/reset.
+                * method: \Ferret 0.12.1\lib\Ferret\Extensions\AethericReduction.lua
+                * Method: Ferret\CosmicExploration\Data\GatheringMissionHandler.lua -> this guy is powerful but doesnt loop
+
+    4. loop.actor(): the "master" that drives the entire process_metatable
+    >> takes the objects(), or information that it receives to make decisions.
+    >> core logic of the loop is, once (3) confirms (2) has the requirements of the truth of (1) are satisfied (can be false or true truths that provide confirmation)
+        |>> then proceed and do the next step (3)
+        |>> logical reasoning is baked into (3) and (2) already that the "master" is simple minded. and he should be.
+            * method:
+            * ferret has numtiple loop templates, not just ferret.core()
+            * see methods: Ferret 0.12.1\lib\Ferret\Templates\CosmicExploration\RedAlert.lua -> alt loop() with diff logical check and method due to RedAlert
+            * see methods: Ferret 0.12.1\lib\Ferret\Templates\CosmicExploration\NodeCrowdsourcing.lua
+            * "biggest actor, broadest control and scope"
+            * fallbacks most important here, but the other fallbacks are more important in (3)
+                <> must have simple fallbacks for debugging and logging progress.
+
+        ****<><|The blueprint: Ferret 0.12.1\lib\Ferret\external\classic.lua|><>****
+
+---@object Program : Object
+---@params organized_data_for_outcomes, (boolean, id, table, string, integer)
+---@params followed_the_workflow, {boolean, table, string, function())
+---@params stayed_organized {booolen, table, function()}
+---@params created_fallbacks_and_core_logic[{boolean, function({table}}]
+return "by inheritance" and logic
+
+Program:extend(function(Workflow))
+
+    1. workflow: put data in the correct Position
+    2. review ferret functions and figure out which can be applied easily without conflict
+    3. create a library of ferret functions that we make as our own to avoid conflict. makke function() = local function(ferret)
+    4. draft up a library table of contents that would be useful, not overlapping
+    5. create library, use blueprint
+    6. revise Cosmoat.lua into a real loop.
+    7. test
+
+
+
+
+>> My Classes<<
+fishing_actor = new extension that can (1) create requests, validate, send them to API and load new mission() in a loop
+FishingCore:parents() = template, object, extension -> inheritance({},{}) -> loop
+
+FishingCore_Parents =
+
+{"ferret" = function() class
+ "fishing-based logic" = objects(function({})),
+ "autohook", = execution class to send commands to server with IPC and calls({})
+ "visland routing" = use SND copy CopyToClipboard() potentially for visland routing, otherwise figure out function() to use this instead of @pathfinding "weather priority", "telemetry"}
+
+---@class Fishing.core() type = Ferret.Core
+---@class Routing:extend() object| (3) params: performs function of {object}, which is an inherited object. decide what from.
+---@class Mission:extend : object |
+---@class MissionAddons:extend(): object |
+---@class FishingHoles:extend(): data table
+
+=====================================================================================
+Rebuild Logic for Workflow
+=====================================================================================
+
+0. Pre-script user configs:
+    = metadata requirements check, including external libraries (ferret)
+    = plugin configurations -- >Mission:config[IPC calls, boolean]
+    = Import autohook presets
+    = Import visland -- >Routing:import() -- use clipboard function in SND to run a visland route??
+                        >Routing:configure() -- after converting my json into a lua library table, could use the vectors there to make a pathing route
+
+
+> function FerretCore:register_default_events()
+> EventManager:emit(Events.PRE_LOOP)
+> RequestManager:subscribe(request, callback)
+
+        > failure state: not prepared to use plugin/plugin does not start
+        > solution: either kill script or kill urself, because script sucks
+
+
+    -- request manager and event manager are interesting and genius helper functions. they are the ones that send the information to the server through a function of a bunch of other helpers all saying yes! do it!
+
+> function FerretCore:start()/stop()/setup()/loop()/register_default_events()
+
+RequestManager:implement(Translation)
+function RequestManager:subscribe(request, callback)
+function RequestManager:request(request, context)
+
+
+> Mission:ready() object, params: int, string, boolean
+> libs\external\Ferret 0.12.1\lib\Ferret\FerretCore.lua
+
+1. Ready to Start Bot
+    = at main base
+    = on fisher job
+    = no current mission (abandon if have)
+        > fail state: has mission from other job, needs to switch back to that job to abandon it
+        > solution: identify current job, scan WKSMissionInfomation, use ferret data and job switch to abandon if needed
+
+> Ferret: ...lib\Ferret\CosmicExploration\CosmicExploration.lua
+2. Identify missions that you want
+    = use ferret's mission building tool
+    = use ferret's priority logic, with minor modification
+        = weather based, critical missions included
+
+> CosmicExploration:create_mision_list(callback)
+> CosmicExploration:create_mission_list_from_names(names)
+> CosmicExploration:create_mission_list_from_ids(ids)
+> CosmicExploration:get_target_result(mission)
+> CosmicExploration:open_mission_menu()
+> CosmicExploration:open_mission_infomation()
+
+
+---@param event Event
+---@param callback fun(table)
+function EventManager:subscribe(event, callback)
+    self:log_debug('subscribe', { event = Events.to_string(event) })
+    if not self.subscriptions[event] then
+        self.subscriptions[event] = {}
+    end
+
+
+
+* pre-loop steps *
+    = get data for telemetry
+        > lunar credits/hr
+        > class exp/hr
+        > establish liveness check os.time() baseline
+        > mission completed counter
+
+* loop() *
+
+>Mission:extend() object
+
+Mission:validate[function(args: object, boolean)]
+
+> Ferret Script:
+Check if mission is present
+    = if true, then abandon mission
+
+Mission:environment[function(args: object, boolean)]
+    = Check redalert
+        > if redalert and fsh mission then
+            >> pick fishing mission, continue
+    = Check weather - Mission:environment()
+        > if weather then: mission is umbral wind or moon dust
+            > identify weather
+            > pick mission based on weather
+
+    = if clear skies: Parse the nodes in WKSMissionInformation until mission from (2) is available
+        > then do that mission
+
+
+
+
+
+
+-- hybrid json key:
+
+-- visland.Routes[] = list; [ {array of tables k, v}, {k, v} ... {kn, vn}, {nested array[{waypoints(k, v}]} ]
+-- visland.Routes[] = t[ {ipairs of Name, Route, Food, Manual, TargetGatherItem}, index of {waypoints}}
+-- Routes.Name{}
+    -- Routes.Name = "route" (string), could be called with the fishing data.
+-- Routes.Group{} = author
+-- Routes.Group = "Cosmoat" (string), not useful
+
+-- Routes.Waypoints[] = list of tables representing the Nodes of a path (a linked list?)
+-- Waypoints:[ {i}, {}, {}, {}, {}...{j?} ]
+-- The first 3 indices of one entry of list(Waypoints) are the x, y, and z values for a step.
+-- Knowing this, if we let  local route = {} (an object, a table representing the entire route.
+-- If we create an object(route) that represents the list(Routes.Waypoints[[1][2][3]) for any given route,
+-- That object is a {} with x, y, z for Node that is part of the Path.
+
+
+-- Routes.Waypoints[] returns { {Node1}, {Node2}, {Node3} ... {NodeN} }; where {Node} = table{ 17 indices/k,v pairs }
+-- target k, v pairs in Routes.Waypoints[]
+-- keys: X, Y, Z, ZoneID, Radius, Pathfind
+-- values: int(x), int(y), int(z), int(ZoneID), boolean(Pathfind)
+-- table.sort(list[, comp]) could be useful for eliminating the useless information in the visland path.
+
+
+
+GetClipboardText fun(): string
+SetClipboardText fun(text: string): nil
+
+SetClipboardText(visland.Routes[Name]) -> set clipboard as the json base64 string
+IPC.visland.StartRoute((GetClipboardText(), false))
+
+This would take the encoded json string, set it as clipboard, and then exe
+
+
+From visland C# code
+
+    internal void ExecuteTempRoute(string base64, bool once)
+    {
+        var (IsBase64, Json) = Utils.FromCompressedBase64(base64);
+        var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(Json);
+        if (route != null)
+            _wndGather.Exec.Start(route, 0, true, !once);
+        else
+            Svc.Log.Warning($"Failed to deserialize route from clipboard: {base64}");
+    }
+
+> notice that visland itself, with the IPC call, deserializes a json-stored route.
+
+Route:getRouteString()
+where getRouteString() is the json at GatherRouteDB.Routes.Name and Name is mission_name
+I think the best way is to store the json-formatted string in a library.lua. But how?
+
+This way we dont need to decode. Decoding would also make the route less reliable and script more complex,
+because it would be parsing a large table for (x.y.z)Node[i to j?] then using a bunch of Player.PathMoveto(Node) commands.

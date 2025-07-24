@@ -1,16 +1,44 @@
 -- =========================================
--- Introduction (comments omitted for clarity)
+-- Introduction
 -- =========================================
+-- I would really love to get this to a fishing-functioning level so i can run it.
+-- A lot of changes needs to have now with these data tables to make the core logic much cleaner.
+-- We also need to look into have a better toolset of the SND API and Ferret to have a comprehensive script.
 
-local presetMap = {
-    [509] = "MoonGel",
-    [508] = "ProcessedMetals",
-    [510] = "CrystallicGems",
-    [511] = "EelRations",
-    [543] = "SunkDrone",
-    [544] = "MutatedFish",
-    [542] = "EdibleFish",
+-- other thoughts:
+-- function EstablishMyMissionCatalogue do return end renturn = {array of numbers -> string to print("/ice on { ' .. ' }") } -- this ensures (if we ultimately go in this direction that the missions chosen are active in the ICE logbook, )
+-- ultimate the script should get to a point of
+    -- self-sufficiency that it can callback missions picking/abandoning/submitting itself
+    -- removing ICE reliance is priority number one
+-- i found a library with a FFXIV plugin and its specifically for creating scripts for Cosmic Exploration, its called Ferret.
+-- I want to use this perfectly-tailored library, because someone has already done the grunt work of making functions and calls and classes to execute a script like this.
+-- Ferret's library also has the tools fo add botancy and mining to this script.
+
+-- I think that, ultimtely, the will either grow into one gigantic one, one perfect optimized for fisher, or like one script with 3 "branches" for the 3 gathering jobs.
+
+--[[ MissionStep = {}
+MissionStep.__index = MissionStep
+
+function MissionStep:new(data)
+    local self = setmetatable({}, MissionStep)
+    for k, v in pairs(data) do self[k] = v end
+    return self
+end
+
+function MissionStep:performFishing()
+    print("Fishing at: " .. self.hole_name)
+    -- fishing logic
+end
+
+-- Usage:
+local mission = MissionStep:new{
+    mission_id = 509,
+    mission_name = "A-2: Refined Moon Gel",
+    hole_name = "Westward Hop-print",
+    -- ...more data...
 }
+mission:performFishing()]]
+
 
 -- =========================================
 -- DATA TABLES
@@ -18,80 +46,246 @@ local presetMap = {
 
 import("System.Numerics")
 
-FisherGearset = "Fisher"
-GoldsmithGearset = "Goldsmith"
-AlchemistGearset = "Alchemist"
-BlacksmithGearset = "Blacksmith"
-CulinarianGearset = "Culinarian"
+local job_information = {
+    { job_name = "Carpenter", job_id = 8, disciple = "crafter", },
+    { job_name = "Blacksmith", job_id = 9, disciple = "crafter", },
+    { job_name = "Armorer", job_id = 10 , disciple = "crafter", },
+    { job_name = "Goldsmith", job_id = 11 , disciple = "crafter", },
+    { job_name = "Leatherworker", job_id = 12 , disciple = "crafter", },
+    { job_name = "Weaver", job_id = 13 , disciple = "crafter", },
+    { job_name = "Alchemist", job_id = 14 , disciple = "crafter", },
+    { job_name = "Culinarian", job_id = 15 , disciple = "crafter", },
+    { job_name = "Miner", job_id = 16 , disciple = "gatherer", },
+    { job_name = "Botanist", job_id = 17, disciple = "gatherer", },
+    { job_name = "Fisher", job_id = 18,  disciple = "gatherer" } }
 
-local fishingHoles = {
-    ["Palus Arsenici"]          = { x = 526.3,  y = 53.7,  z = 597.7, route = "Oat_PalusArsenici" },
-    ["Hollow Harbor"]           = { x = -563.5, y = 69.1,  z = -647.4, route = "Oat_HollowHarbor" },
-    ["Northward Hop-print"]     = { x = 918.3,  y = -58.8,  z = -337.2, route = "Oat_NHopPrint" },
-    ["Southeast Well"]          = { x = 203.7,  y = 19.5,  z = 204.7, route = "Oat_SoutheastWell" },
-    ["Weeping Pool"]            = { x = 70.5,   y = 26.0,  z = -307.1, route = "Oat_WeepPool" },
-    ["Westward Hop-print"]      = { x = -264.2, y = 22.4,  z = -96.1, route = "Oat_WHopPrint" },
-    ["Glimmerpond Alpha"]       = { x = -688.1, y = 57.1,  z = 398.9, route = "Oat_GPAlpha" },
-    ["Glimmerpond Beta"]        = { x = -357.5, y = 47.8,  z = 639.8, route = "Oat_GPBeta" },
-    ["Aetherial Falls"]         = { x = 918.2,  y = -58.8, z = -337.2, route = "Oat_AetherialFalls" },
-    ["Critical_Drone_LOC"]        = { x = -124.4, y = 20.1,  z = -286.3, route = "Oat_CritDrone" },
-    ["Critical_EdibleFish_LOC"]   = { x = -299.7, y = 24.4,  z = -102.0, route = "Oat_CritEdible" },
-    ["Critical_MutatedFish_LOC"]  = { x = 110.2,  y = 18.8,  z = -229.5, route = "Oat_CritMutant" },
-    ["Critical_Drone_TurnIn"]       = { x = -250.9, y = 19.5,  z = -250.9 },
-    ["Critical_EdibleFish_TurnIn"]  = { x = -459.2, y = 37.7,  z = -67.1 },
-    ["Critical_MutatedFish_TurnIn"] = { x = 114.9,  y = 19.7,  z = -196.9 },
-}
+local fishing_hole = {
+    { hole_name = "Palus Arsenici", coords = { x = 526.3, y = 53.7, z = 597.7 }, route = "Oat_PalusArsenici" },
+    { hole_name = "Hollow Harbor", coords = { x = -563.5, y = 69.1, z = -647.4 }, route = "Oat_HollowHarbor" },
+    { hole_name = "Northward Hop-print", coords = { x = 918.3, y = -58.8, z = -337.2 }, route = "Oat_NHopPrint" },
+    { hole_name = "Southeast Well", coords = { x = 203.7, y = 19.5, z = 204.7 }, route = "Oat_SoutheastWell" },
+    { hole_name = "Weeping Pool", coords = { x = 70.5, y = 26.0, z = -307.1 }, route = "Oat_WeepPool" },
+    { hole_name = "Westward Hop-print", coords = { x = -264.2, y = 22.4, z = -96.1 }, route = "Oat_WHopPrint" },
+    { hole_name = "Glimmerpond Alpha", coords = { x = -688.1, y = 57.1, z = 398.9 }, route = "Oat_GPAlpha" },
+    { hole_name = "Glimmerpond Beta", coords = { x = -357.5, y = 47.8, z = 639.8 }, route = "Oat_GPBeta" },
+    { hole_name = "Aetherial Falls", coords = { x = 918.2, y = -58.8, z = -337.2 }, route = "Oat_AetherialFalls", },
+    { hole_name = "critical_drone_loc", coords = { x = -124.4, y = 20.1, z = -286.3 }, route = "Oat_CritDrone", },
+    { hole_name = "critical_ediblefish_loc", coords = { x = -299.7, y = 24.4, z = -102.0 }, route = "Oat_CritEdible", },
+    { hole_name = "critical_mutatedfish_loc", coords = { x = 110.2, y = 18.8, z = -229.5 }, route = "Oat_CritMutant", } }
 
-local FishingMissions = {
-    -- Prerequisite Missions (UNFINISHED)
-    { id = 485, name = "A-1: Fine-grade Water Filter Materials I", hole = "Westward Hop-print", coords = fishingHoles["Westward Hop-print"], requiresCrafting = false },
-    { id = 486, name = "A-2: Fine-grade Water Filter Materials II", hole = "Weeping Pool", coords = fishingHoles["Weeping Pool"], requiresCrafting = false },
-    { id = 487, name = "A-3: Fine-grade Water Filter Materials III", hole = "Hollow Harbor", coords = fishingHoles["Hollow Harbor"], requiresCrafting = false },
+local cosmic_missions = {
+    { mission_id = 485, mission_type = "standard", mission_name = "A-1: Fine-grade Water Filter Materials I", hole_name = "Westward Hop-print", coords = fishing_hole.["Westward Hop-print"], }, -- fix coords, needs a function bhind it to ipairs() the dictionary to get an array.
+    { mission_id = 486, mission_type = "standard", mission_name = "A-2: Fine-grade Water Filter Materials II", hole_name = "Weeping Pool", coords = fishing_hole["Weeping Pool"], },
+    { mission_id = 487, mission_type = "standard", mission_name = "A-3: Fine-grade Water Filter Materials iii", hole_name = "Hollow Harbor", coords = fishing_hole["Hollow Harbor"], },
+    { mission_id = 510, mission_type = "hybrid", mission_name = "A-3: Crystallic Gems", hole_name = "Palus Arsenici", coords = fishing_hole["Palus Arsenici"], crafter = "Goldsmith", fish_id = 45928, famount = 14, item_id = 47221, iamount = 3, min_iamount = 1, weather_id = 49 },
+    { mission_id = 511, mission_type = "hybrid", mission_name = "A-3: Eel Rations", hole_name = "Hollow Harbor", coords = fishing_hole["Hollow Harbor"], crafter = "Culinarian", fish_id = 45940, famount = 3, item_id = 45934, iamount = 3, min_iamount = 1, weather_id = 148 },
+    { mission_id = 509, mission_type = "hybrid", mission_name = "A-2: Refined Moon Gel", hole_name = "Westward Hop-print", coords = fishing_hole["Westward Hop-print"], crafter = "Alchemist", fish_id = 45922, famount = 3, item_id = 47593, iamount = 3, min_iamount = 1, weather_id = 1 },
+    { mission_id = 508, mission_type = "hybrid", mission_name = "A-2: Processed Aquatic Metals", hole_name = "Southeast Well", coords = fishing_hole["Southeast Well"],  crafter = "Blacksmith", fish_id = 45917, famount = 14, item_id = 46973, iamount = 3, min_iamount = 1, weather_id = 1 },
+    { mission_id = 543, mission_type = "critical", mission_name = "Sunken Drone Salvage", hole_name = "critical_drone_loc", coords = fishing_hole["critical_drone_loc"], turn_in_coords = "Critical_Drone_TurnIn", fish_id = 45939, fish_count = 3, weather_id = 149 },
+    { mission_id = 544, mission_type = "critical", mission_name = "Mutated Fish", hole_name = "critical_mutatedfish_loc", coords = fishing_hole["critical_mutatedfish_loc"], turn_in_coords = "Critical_MutatedFish_TurnIn", fish_id = 45945, fish_count = 3, weather_id = 197 },
+    { mission_id = 542, mission_type = "critical", mission_name = "Edible Fish", hole_name = "critical_ediblefish_loc", coords = fishing_hole["critical_ediblefish_loc"], turn_in_coords = "Critical_EdibleFish_TurnIn", fish_id = 45937, fish_count = 3, weather_id = 196 } }
 
-    -- Hybrid Missions
-    { id = 510, name = "A-3: Crystallic Gems", fishID = 45928, famount = 14, itemId = 47221, iamount = 3, min_iamount = 1, weatherId = 49, hole = "Palus Arsenici", coords = fishingHoles["Palus Arsenici"], requiresCrafting = true, crafter = "Goldsmith" },
-    { id = 511, name = "A-3: Eel Rations", fishID = 45940, famount = 3, itemId = 45934, iamount = 3, min_iamount = 1, weatherId = 148, hole = "Hollow Harbor", coords = fishingHoles["Hollow Harbor"], requiresCrafting = true, crafter = "Culinarian" },
-    { id = 509, name = "A-2: Refined Moon Gel", fishID = 45922, famount = 3, itemId = 47593, iamount = 3, min_iamount = 1, weatherId = 1, hole = "Westward Hop-print", coords = fishingHoles["Westward Hop-print"], requiresCrafting = true, crafter = "Alchemist" },
-    { id = 508, name = "A-2: Processed Aquatic Metals", fishID = 45917, famount = 14, itemId = 46973, iamount = 3, min_iamount = 1, weatherId = 1, hole = "Southeast Well", coords = fishingHoles["Southeast Well"], requiresCrafting = true, crafter = "Blacksmith" },
+local mission_type_requirements = {
+    { mission_type = "Standard", weather_id = 1 , fishing_step = true, crafting_step = false, submit_method = "callback" },
+    { mission_type = "Hybrid", weather_id = {49, 148}, fishing_step = true, crafting_step = true, submit_method = "callback" },
+    { mission_type = "Critical",  weather_id = {196, 197}, fishing_step = true, crafting_step = false, submit_method = "submit_npc" } }
 
-    -- Critical Missions
-    { id = 543, name = "Sunken Drone Salvage", fishID = 45939, famount = 3, weatherId = 149, hole = "Critical_Drone_LOC", coords = fishingHoles["Critical_Drone_LOC"], turnIn = "Critical_Drone_TurnIn", requiresCrafting = false },
-    { id = 544, name = "Mutated Fish", fishID = 45945, famount = 3, weatherId = 197, hole = "Critical_MutatedFish_LOC", coords = fishingHoles["Critical_MutatedFish_LOC"], turnIn = "Critical_MutatedFish_TurnIn", requiresCrafting = false },
-    { id = 542, name = "Edible Fish", fishID = 45937, famount = 3, weatherId = 196, hole = "Critical_EdibleFish_LOC", coords = fishingHoles["Critical_EdibleFish_LOC"], turnIn = "Critical_EdibleFish_TurnIn", requiresCrafting = false },
-}
+local autohook_preset_key = {
+    { mission_id = 509, preset = "MoonGel" },
+    { mission_id = 508, preset = "ProcessedMetals" },
+    { mission_id = 510, preset = "CrystallicGems" },
+    { mission_id = 511, preset = "EelRations" },
+    { mission_id = 543, preset = "SunkDrone",},
+    { mission_id = 544, preset = "MutatedFish" },
+    { mission_id = 542, preset = "EdibleFish" } }
+
+local mission_sequences = {
+    -- standard = { "getMission", "rerollMissionsByPriority", "findLocation", "pathToLocation", "doFishing", "submit" }, -- not implemented
+    hybrid = {  "getMission", "pathToLocation",  "doFishing", "doCrafting", "submit" },
+    critical = { "getMission", "findLocation", "pathToLocation",  "doFishing", "specialSubmit" } }
+
+-- ==============================
+-- IMPORT FERRET HELPERS
+-- ==============================
+
+Object = require('external/classic')
+
+i18n = require('external/i18n/init')
+i18n.setLocale(_language or 'en')
+i18n.load(require('Ferret/i18n/translations'))
+
+-- Mixins
+require('Ferret/Mixins/Translation')
+
+-- Data enums and objects
+require('Ferret/Data/Translatable')
+require('Ferret/Data/Events')
+require('Ferret/Data/Requests')
+require('Ferret/Data/Jobs')
+require('Ferret/Data/Objects')
+require('Ferret/Data/Status')
+require('Ferret/Data/Version')
+require('Ferret/Data/Node')
+
+-- Managers
+local CosmicExploration = require('Ferret 0.12.1.lib.Ferret.CosmicExploration.Addons.Addons')
+local EventManager = require('Ferret/EventManager')
+local RequestManager = require('Ferret/RequestManager')
+local ExtensionManager = require('Ferret/ExtensionManager')
+
+-- Base extension
+require('Ferret/Extensions/Extension')
+
+-- Addons
+local Addons require('Ferret/Addons/Addons')
+
+-- Actions
+require('Ferret/Actions/Actions')
+
+-- Static objects
+Character = require('Ferret/Character')
+Mount = require('Ferret/Mount')
+World = require('Ferret/World')
+Gathering = require('Ferret/Gathering')
+GatherBuddy = require('Ferret/GatherBuddy')
+Logger = require('Ferret/Logger')
+Debug = require('Ferret/Debug')
+Table = require('Ferret/Table')
+String = require('Ferret/String')
+Wait = require('Ferret/Wait')
+
+
+-- ==============================
+-- OOP: Object/Data-Driven MissionStep Step Template
+-- ==============================
+
+-- Prototype
+---@class MissionStep : Object
+local MissionStep = {}
+MissionStep.__index = MissionStep
+
+-- Constructor Template
+function MissionStep:sequenceStep(functions, args, int, booleans... etc) -- set Data from Data Tables
+    local self = setmetatable({}, MissionStep)  -- "self" will use MissionStep as its metatable
+    for k, v in pairs(data) do self[k] = v end  -- copy keys/values from your data table
+    return self
+end
+
+function MissionStep:pathToMissionLocation()
+    local self = setmetatable({}, MissionStep)
+    for k, v in pairs(data) do self[k] = v end
+    if self.coords and self.coords.x then
+        self.node = Node(self.coords.x, self.coords.y, self.coords.z)
+
+
+    end
+    return self
+end
+
+
 
 -- =========================================
 -- HELPER FUNCTIONS
 -- =========================================
 
-function GetJobIDs(job)
-    local ids = {
-        ["Carpenter"] = 8,
-        ["Blacksmith"] = 9,
-        ["Armorer"] = 10,
-        ["Goldsmith"] = 11,
-        ["Leatherworker"] = 12,
-        ["Weaver"] = 13,
-        ["Alchemist"] = 14,
-        ["Culinarian"] = 15,
-        ["Miner"] = 16,
-        ["Botanist"] = 17,
-        ["Fisher"] = 18,
-    }
-    return ids[job] or 0
+-- Prototype
+---@class MissionStep : Object
+local MissionStep = {}
+MissionStep.__index = MissionStep
+
+function MissionStep:getMission()
+    local self = setmetatable({}, MissionStep)
+
+    yield("/echo Getting mission...")
+    CosmicExploration:open_mission_infomation() -- Ferret helper, opens WKSMissionInfomation
+    local weather_id = GetActiveWeatherID() -- SND helper, gets current weather ID
+    for k, v in pairs({cosmic_missions}) do self[k] = v -- iterates over cosmic_missions
+    return v
+
+    if v = weather_id ==
+
+
+    if weather_id ==
+
+
+    if player already has a mission, if true then abandon mission (first try only) else continue
+    yield(" AbandonMissionbyCallback ") -- fire command to game
+    if Player does not have mission, get mission with callback to WKSMissionInfomation
+        if critical mission weather, then pick critical mission end
+        print("/callback ....") -> continue
+
+        elseif umbral wind or moon dust, then pick hybrid mission
+        print("/callback ....") -> continue
+
+        elseif clear skies, then attempt to pick a non-weather hybrid (508 and 509)
+            while this is happening
+            yield("/wait 0.25")
+            if mission 508 or 509 is available,
+            print("/callback ....")
+        end
+        repeat until player_has_mission == true
+    print("MissionStep got")
+
+        fallback - attempt for 2 minutes, then quit(killscript)
 end
 
+-- function MissionStep:rerollMissionsByPriority()
+    -- print("Rerolling missions...")
+        -- logic here
+-- end
+
+function MissionStep:findLocation(cosmic_missions)
+    print("Gauging our coordinates...")
+
+
+
+end
+
+
+
+
+local step1_state = {}
+    while step1_state do
+
+setmetatable(MissionSequence, process_metatable)
+
+process_metatable.__index = function(a table, key)
+
+
+
+-- =========================================
+-- HELPER FUNCTIONS
+-- =========================================
+
 function EquipFisher()
-    local currentJobId = Svc.ClientState.LocalPlayer.ClassJob.Id
-    if currentJobId ~= 18 then 
+    local currentJobID = Svc.ClientState.LocalPlayer.ClassJob.Id
+    if currentJobID ~= 18 then
         yield("/gs change " .. FisherGearset)
         yield("/wait 1")
     end
 end
 
+function ChangeJob(job_id_step)
+    local job_id_now = Svc.ClientState.LocalPlayer.ClassJob.Id
+    local job_id_step = {}
+
+    if Player.Gearset.ClassJob == job_id_now
+        then
+
+
+    for i, gs in ipairs(Gearsets) do
+        if Gearset.Name == "Fisher" then
+            Player.Gearsets:Equip(i)
+            break
+        end
+    end
+    Player.Gearsets:Equip()
+
+
+
 function EnsurePlayerIdle(minWait, maxWait)
-    minWait = minWait or 3    -- Minimum seconds to wait (customize if you like)
-    maxWait = maxWait or 7    -- Maximum seconds to wait (customize if you like)
+    minWait = minWait or 3 -- Minimum seconds to wait (customize if you like)
+    maxWait = maxWait or 7 -- Maximum seconds to wait (customize if you like)
     local targetWait = math.random(minWait, maxWait)
     yield("/echo [EnsurePlayerIdle] Waiting for idle: " .. targetWait .. "s...")
     local start = os.time()
@@ -111,40 +305,71 @@ function EnsurePlayerIdle(minWait, maxWait)
     return true
 end
 
-function EnsureMissionWindowOpen()
+function MakeAddonVisible()
     if not Addons.GetAddon("WKSMissionInfomation").Ready then
         yield("/callback WKSHud true 11")
-        yield("/wait 2")
+        yield("/wait 1")
     end
 end
 
-local iceStarted = false
+
+-- function GetMissionByPriority -- a replacement for ICE, use ferret scripts
+
+    -- do MakeAddonVisible()
+    -- local available_mission_id
+    -- Read mission selection amission selec5tion addon nodes are available MissionStep nodes, get available_mission_id
+            -- (1) if weather = critical then f(SelectMission(critical)), continue
+            -- (2) if weather = umbral wind or moon dust then f(SelectMission(hybrid)), continue
+            -- (3) if weather = clear skies, then look for mission_id = 508 or 509
+                -- (4) if mission_id of missions_in_addon ~= one of cosmic_missions.missionid, then abandon mission, repeat until mission_got = true
+    -- local active_mission_name = Addons.GetAddon("WKSMissionInfomation"):GetNode(1, 3).Text => 'string'
+    --
+    -- for _, mission_name in ipairs(cosmic_missions) do
+        -- if mission_name == active_mission_name then yield mission_id:cosmic_missions[mission_name]
+        -- active_mission_id = yield
+    -- print("/echo MissionStep Obtained: ( .. 'active_mission_name' ..). Success!")\
+-- end
+
 function GetActiveMission()
-    if not iceStarted then
-        yield("/ice start")
-        yield("/wait 1")
-        iceStarted = true
-    end
-    while true do
-        EnsureMissionWindowOpen()
-        if Addons.GetAddon("WKSMissionInfomation").Ready then
-            local missionName = Addons.GetAddon("WKSMissionInfomation"):GetNode(1, 3).Text
-            for _, mission in ipairs(FishingMissions) do
-                if mission.name == missionName then return mission end
+    if Addons.GetAddon("WKSMissionInfomation").Ready ~= true then
+        do MakeAddonVisible()
+        yield("/wait 0.5")
+    until Addons.GetAddon("WKSMissionInfomation").Ready == true then
+
+    local active_mission
+
+    yield()
+
+    if Addons.GetAddon("WKSMissionInfomation").Ready == true then repeat
+
+    else return Addons.GetAddon("WKSMissionInfomation"):GetNode(1, 3).Text
+            for _, mission in ipairs(cosmic_missions) do
+                if mission.name == missionName then return active_mission end
             end
         end
         yield("/wait 0.5")
     end
 end
 
-function IsCriticalMission(mission)
-    return mission.id == 542 or mission.id == 543 or mission.id == 544
+
+function GetAutoHookPreset()
+    local active_mission_id =
+    for _, entry in ipairs(autohook_preset_key) do
+        autohook_preset_key.mission_id = preset_mission
+
+    mission_id:autohook_preset_key ==
+
+end
+
+function IsCriticalMission(mcosmic_missions)
+    if mcosmic_missions.mission_type == "Critical" then return
 end
 
 function GetDistanceToTarget(targetCoords)
     if not targetCoords then return 999 end
     local playerPos = Svc.ClientState.LocalPlayer.Position
-    return math.sqrt((playerPos.X - targetCoords.x)^2 + (playerPos.Y - targetCoords.y)^2 + (playerPos.Z - targetCoords.z)^2)
+    return math.sqrt((playerPos.X - targetCoords.x) ^ 2 + (playerPos.Y - targetCoords.y) ^ 2 +
+    (playerPos.Z - targetCoords.z) ^ 2)
 end
 
 function HasMinAnglersArtStacks()
@@ -167,7 +392,7 @@ function UseAnglersArtStacks()
 
     local stacks = getStacks()
     if stacks < 3 then
-        yield("/echo Not enough Angler's Art stacks ("..stacks..") for Thaliak's Favor. Skipping.")
+        yield("/echo Not enough Angler's Art stacks (" .. stacks .. ") for Thaliak's Favor. Skipping.")
         return false
     end
 
@@ -175,7 +400,7 @@ function UseAnglersArtStacks()
     while stacks >= 3 do
         Actions.ExecuteGeneralAction(26804) -- Thaliak's Favor
         yield("/echo Thaliak's Favor used. Waiting for animation...")
-        yield("/wait 2.5") -- Wait for GCD/animation
+        yield("/wait 2.5")                  -- Wait for GCD/animation
 
         stacks = getStacks()
         yield(string.format("/echo Current Angler's Art stacks: %d", stacks))
@@ -222,11 +447,11 @@ end
 
 function IsAtCoords(targetCoords, tolerance)
     tolerance = tolerance or 2
-        local playerPos = Svc.ClientState.LocalPlayer.Position
-        local dx = playerPos.X - targetCoords.x
-        local dy = playerPos.Y - targetCoords.y
-        local dz = playerPos.Z - targetCoords.z
-        local dist = math.sqrt(dx*dx + dy*dy + dz*dz)
+    local playerPos = Svc.ClientState.LocalPlayer.Position
+    local dx = playerPos.X - targetCoords.x
+    local dy = playerPos.Y - targetCoords.y
+    local dz = playerPos.Z - targetCoords.z
+    local dist = math.sqrt(dx * dx + dy * dy + dz * dz)
     return dist <= tolerance
 end
 
@@ -234,8 +459,8 @@ end
 -- CORE SCRIPT LOGIC FUNCTIONS
 -- =========================================
 
-function AutoHookPresetByMission(missionId, missionName)
-    local preset = presetMap[missionId]
+function AutoHookPresetByMission(missionID, missionName)
+    local preset = presetMap[missionID]
     if preset then
         IPC.AutoHook.SetPreset(preset)
         yield('/echo AutoHook preset set to: "' .. preset .. '".')
@@ -246,15 +471,15 @@ function AutoHookPresetByMission(missionId, missionName)
     end
 end
 
-function MoveToTarget(holeName, targetCoords)
+function MoveToTarget(hole_name, targetCoords)
     local maxRetries = 2
-    local holeData = fishingHoles[holeName]
+    local holeData = FishingHole[hole_name]
     if not (holeData and holeData.route and holeData.route ~= "") then
-        yield('/echo ERROR: No Visland route found for "' .. holeName .. '".')
+        yield('/echo ERROR: No Visland route found for "' .. hole_name .. '".')
         return false
     end
     for attempt = 1, maxRetries do
-        yield('/echo Move attempt ' .. attempt .. '/' .. maxRetries .. ' to "' .. holeName .. '".')
+        yield('/echo Move attempt ' .. attempt .. '/' .. maxRetries .. ' to "' .. hole_name .. '".')
         yield('/visland execonce ' .. holeData.route)
         local startTime = os.time()
         local maxTravelTime = 120
@@ -268,7 +493,8 @@ function MoveToTarget(holeName, targetCoords)
             end
             if (os.time() - lastStuckCheckTime) > 10 then
                 local currentPos = Svc.ClientState.LocalPlayer.Position
-                local distMoved = math.sqrt((currentPos.X - lastStuckCheckPos.X)^2 + (currentPos.Y - lastStuckCheckPos.Y)^2 + (currentPos.Z - lastStuckCheckPos.Z)^2)
+                local distMoved = math.sqrt((currentPos.X - lastStuckCheckPos.X) ^ 2 +
+                (currentPos.Y - lastStuckCheckPos.Y) ^ 2 + (currentPos.Z - lastStuckCheckPos.Z) ^ 2)
                 if distMoved < 1 then
                     yield("/echo STUCK DETECTED.")
                     IPC.visland.StopRoute()
@@ -280,7 +506,7 @@ function MoveToTarget(holeName, targetCoords)
             yield("/wait 1")
         end
         if GetDistanceToTarget(targetCoords) <= 5 then
-            yield('/echo Arrived at ' .. holeName .. '.')
+            yield('/echo Arrived at ' .. hole_name .. '.')
             return true
         elseif attempt < maxRetries then
             yield("/echo Movement failed. Returning to base to retry...")
@@ -288,13 +514,13 @@ function MoveToTarget(holeName, targetCoords)
             yield("/wait " .. math.random(7, 12))
         end
     end
-    yield("/echo FAILED to reach " .. holeName .. " after " .. maxRetries .. " attempts.")
+    yield("/echo FAILED to reach " .. hole_name .. " after " .. maxRetries .. " attempts.")
     return false
 end
 
 function PerformFishingMission(mission)
     local startTime = os.time()
-    local maxFishingTime = 480  -- 8 minutes
+    local maxFishingTime = 480 -- 8 minutes
 
     yield("/echo Starting fishing phase.")
     yield("/wait 1")
@@ -338,7 +564,7 @@ function DoCraftingStep(mission)
         yield("/echo Switching to crafter: " .. mission.crafter)
         GearSwap(mission.crafter, GetJobIDs(mission.crafter))
     else
-        yield("/echo ERROR: Mission has no crafter job info. Debug data tables.")
+        yield("/echo ERROR: MissionStep has no crafter job info. Debug data tables.")
         return false
     end
 
@@ -358,7 +584,7 @@ function DoCraftingStep(mission)
     local needed = (mission.min_iamount or mission.iamount or 1)
 
     if alreadyHave >= needed then
-        yield("/echo Already have enough crafted items ("..alreadyHave..") for this turn-in.")
+        yield("/echo Already have enough crafted items (" .. alreadyHave .. ") for this turn-in.")
         EnsureStandingFromSeatedCrafting()
         return true
     end
@@ -425,12 +651,12 @@ function SubmitMission(mission)
         EquipFisher()
         yield("/wait 1")
         yield("/callback WKSMissionInfomation true 11 1")
-        yield("/echo Mission submission complete.")
+        yield("/echo MissionStep submission complete.")
         return true
 
-    -- CRITICAL MISSION
+        -- CRITICAL MISSION
     elseif IsCriticalMission(mission) then
-        local turnInCoords = fishingHoles[mission.turnIn]
+        local turnInCoords = FishingHole[mission.turnIn]
         local dest = Vector3.new(turnInCoords.x, turnInCoords.y, turnInCoords.z)
         IPC.vnavmesh.PathfindAndMoveTo(dest, false)
         while IPC.vnavmesh.IsRunning() do
@@ -443,7 +669,7 @@ function SubmitMission(mission)
         yield("/echo Critical mission turn-in complete.")
         return true
 
-    -- DEFAULT (add other mission types here as needed)
+        -- DEFAULT (add other mission types here as needed)
     else
         yield("/echo [Submit] WARNING: Unrecognized mission type for submission.")
         return false
@@ -458,7 +684,7 @@ local lastCompletionTime = os.time()
 local lastLunarPoints = 0
 local lastClassExp = 0
 local isFirstRun = true
-local previousMissionId = nil
+local previousMissionID = nil
 
 while true do
     yield("/echo --- Loop restarting ---")
@@ -475,7 +701,7 @@ while true do
     EquipFisher()
     yield("/wait 1")
 
-    -- Step 2: Get Mission
+    -- Step 2: Get MissionStep
     local mission = GetActiveMission()
     if not mission then
         yield("/echo No active mission. Retrying in 5 seconds.")
@@ -493,12 +719,12 @@ while true do
     yield("/wait 1")
 
     -- Step 4: Movement logic
-    if previousMissionId ~= nil and mission.id == previousMissionId and IsAtCoords(mission.coords, 5) then
+    if previousMissionID ~= nil and mission.id == previousMissionID and IsAtCoords(mission.coords, 5) then
         yield("/echo [Movement] Same mission and already at fishing spot. No movement needed.")
         -- No movement, proceed
     else
-        if previousMissionId ~= nil and mission.id ~= previousMissionId then
-            yield("/echo [Movement] Mission changed, returning to base.")
+        if previousMissionID ~= nil and mission.id ~= previousMissionID then
+            yield("/echo [Movement] MissionStep changed, returning to base.")
             Actions.ExecuteGeneralAction(26) -- Return
             yield("/wait " .. math.random(7, 12))
         end
@@ -541,7 +767,7 @@ while true do
         yield("/echo [Crafting] Not required for this mission. Skipping.")
     end
 
-    -- Step 7: Submit Mission
+    -- Step 7: Submit MissionStep
     yield("/echo Submitting mission turn-in...")
     if not SubmitMission(mission) then
         yield("/echo --- Loop restarting (submit fail, waiting 10s) ---")
@@ -565,7 +791,7 @@ while true do
             local hoursElapsed = timeElapsed / 3600
             local lunarPPH = math.floor(lunarGained / hoursElapsed)
             local expPPH = math.floor(expGained / hoursElapsed)
-            yield("/echo Mission success! Rates -- Lunar Credits: " .. lunarPPH .. "/hr | EXP: " .. expPPH .. "/hr.")
+            yield("/echo MissionStep success! Rates -- Lunar Credits: " .. lunarPPH .. "/hr | EXP: " .. expPPH .. "/hr.")
         end
     end
 
@@ -573,7 +799,7 @@ while true do
     lastCompletionTime = os.time()
     lastLunarPoints = currentLunarPoints
     lastClassExp = currentClassExp
-    previousMissionId = mission.id
+    previousMissionID = mission.id
 
     yield("/wait " .. math.random(2, 4))
     ::continue::

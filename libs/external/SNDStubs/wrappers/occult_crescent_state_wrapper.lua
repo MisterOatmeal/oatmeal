@@ -1,0 +1,10 @@
+--- @class OccultCrescentStateWrapper
+--- @field CurrentKnowledge number
+--- @field NeededKnowledge number
+--- @field NeededJobExperience number
+--- @field Silver number
+--- @field Gold number
+--- @field CurrentSupportJob number
+--- @field KnowledgeLevelSync number
+--- @field SupportJobExperience object
+--- @field SupportJobLevels object

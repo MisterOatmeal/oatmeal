@@ -1,0 +1,14 @@
+--- @class InventoryItemWrapper
+--- @field ItemId number
+--- @field BaseItemId number
+--- @field Count number
+--- @field SpiritbondOrCollectability number
+--- @field Condition number
+--- @field GlamourId number
+--- @field IsHighQuality boolean
+--- @field LinkedItem InventoryItemWrapper
+--- @field Container InventoryType
+--- @field Slot number
+--- @field Use fun(): nil
+--- @field Desynth fun(): nil
+--- @field MoveItemSlot fun(destinationContainer: InventoryType): nil

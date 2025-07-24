@@ -1,0 +1,13 @@
+--- @class DutyFinderWrapper
+--- @field IsUnrestrictedParty boolean
+--- @field IsLevelSync boolean
+--- @field IsMinIL boolean
+--- @field IsSilenceEcho boolean
+--- @field IsExplorerMode boolean
+--- @field IsLimitedLevelingRoulette boolean
+--- @field QueueState QueueStates
+--- @field OpenRouletteDuty fun(contentRouletteID: number): nil
+--- @field OpenRegularDuty fun(contentsFinderCondition: number): nil
+--- @field QueueDuty fun(contentsFinderCondition: number): nil
+--- @field QueueRoulette fun(contentRouletteId: number): nil
+--- @field CancelQueue fun(): nil

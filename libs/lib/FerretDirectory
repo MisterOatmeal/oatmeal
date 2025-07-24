@@ -1,0 +1,174 @@
+local libraries = {
+    library_name = "Ferret",
+    library_index = {
+        Ferret = {
+            name = "Ferret",
+            contents = {
+                "Character.lua", "Debug.lua", "EventManager.lua", "ExtensionManager.lua",
+                "FerretCore.lua", "GatherBuddy.lua", "Gathering.lua", "globals.lua",
+                "IO.lua", "Library.lua", "Logger.lua", "Mount.lua", "Pathfinding.lua",
+                "RequestManager.lua", "Sandtimer.lua", "SomethingNeedDoing.lua",
+                "SpearfishingHelper.lua", "String.lua", "Table.lua", "Targetable.lua",
+                "Timer.lua", "Wait.lua", "World.lua"
+            },
+            subfolders = {
+                Actions = {
+                    contents = {
+                        "Action.lua", "Actions.lua", "AetherialReduction.lua", "AgelessWords.lua",
+                        "CraftingLog.lua", "MateriaExtraction.lua", "MeticulouProspector.lua",
+                        "MeticulousWoodsman.lua", "MountAction.lua", "MountRoulette.lua",
+                        "RepairAction.lua", "SolidReason.lua", "Sprint.lua", "WiseToTheWorld.lua"
+                    }
+                },
+                Addons = {
+                    contents = {
+                        "Addon.lua", "Addons.lua", "GatheringAddon.lua", "GatheringMasterpiece.lua",
+                        "Materialize.lua", "MaterializeDialog.lua", "PurifyAutoDialog.lua",
+                        "PurifyItemSelector.lua", "PurifyResult.lua", "RecipeNote.lua",
+                        "SelectIconString.lua", "SelectString.lua", "SelectYesno.lua",
+                        "SpearFishing.lua", "Synthesis.lua", "Talk.lua", "ToDoList.lua"
+                    },
+                    subfolders = {
+                        Mixins = {
+                            contents = { "GracefulClose.lua", "GracefulOpen.lua" }
+                        }
+                    }
+                },
+                CosmicExploration = {
+                    contents = { "CosmicExploration.lua", "Library.lua" },
+                    subfolders = {
+                        Addons = {
+                            contents = {
+                                "Addons.lua", "WKSHud.lua", "WKSMission.lua", "WKSMissionInfomation.lua",
+                                "WKSRecipeNotebook.lua", "WKSToolCustomize.lua"
+                            }
+                        },
+                        Data = {
+                            files = {
+                                "CraftingMissionHandler.lua", "GatheringMissionHandler.lua", "GatheringNodeLayout.lua",
+                                "MasterMissionList.lua", "Mission.lua", "MissionList.lua", "MissionResult.lua",
+                                "MissionReward.lua", "MissionScore.lua", "ResearchProgressBar.lua"
+                            },
+                            Missions = {
+                                SinusArdorum = {
+                                    contents = {
+                                        "AlchemistMissions.gen.lua", "ArmorerMissions.gen.lua",
+                                        "BlacksmithMissions.gen.lua",
+                                        "BotanistMissions.gen.lua", "CarpenterMissions.gen.lua",
+                                        "CulinarianMissions.gen.lua",
+                                        "FisherMissions.gen.lua", "GoldsmithMissions.gen.lua",
+                                        "LeatherworkerMissions.gen.lua",
+                                        "MinerMissions.gen.lua", "WeaverMissions.gen.lua"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                Data = {
+                    files = {
+                        "Conditions.lua", "Events.lua", "Jobs.lua", "Name.lua", "Node.lua", "Objects.lua",
+                        "Requests.lua", "Status.lua", "Translatable.lua", "Version.lua", "Weather.lua"
+                    }
+                },
+                Extensions = {
+                    files = {
+                        "AethericReduction.lua", "CraftingConsumables.lua", "Extension.lua",
+                        "ExtractMateria.lua", "Repair.lua"
+                    }
+                },
+                external = {
+                    files = { "classic.lua" },
+                    i18n = {
+                        files = { "de.lua", "en.lua", "fr.lua", "jp.lua", "translations.lua" },
+                        en = {
+                            files = { "actions.lua" },
+                            modules = {
+                                files = { "cosmic_exploration.lua" }
+                            }
+                        }
+                    }
+                },
+                Mixins = {
+                    files = { "Translation.lua" }
+                },
+                Presets = {
+                    CosmicExploration = {
+                        MissionFarmer = { files = { "PointFarm.lua" } }
+                    },
+                    Gathering = {
+                        Spearfishing = { files = { "SungiltAethersand.lua" } }
+                    }
+                },
+                Templates = {
+                    files = { "Template.lua" },
+                    CosmicExploration = {
+                        files = {
+                            "GatheringSpam.lua", "MissionFarmer.lua", "NodeCrowdsourcing.lua",
+                            "RedAlert.lua", "RelicAutomator.lua"
+                        }
+                    },
+                    Gathering = {
+                        files = { "Spearfishing.lua" }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+Object = {
+    require = "external/classic",
+    class = "Object",
+    parameters =
+    {
+        "extend function",
+        "implement function",
+        "is function",
+        "__tostring function",
+        "__call function",
+        "super object",
+        "new fun(object, ...)"
+    },
+}
+
+local require_list = {
+    -- Mixins
+    'Ferret/Mixins/Translation',
+    -- Data enums and objects
+    'Ferret/Data/Translatable', 'Ferret/Data/Conditions', 'Ferret/Data/Events',
+    'Ferret/Data/Requests', 'Ferret/Data/Jobs', 'Ferret/Data/Name',
+    'Ferret/Data/Objects', 'Ferret/Data/Status', 'Ferret/Data/Weather',
+    'Ferret/Data/Version', 'Ferret/Data/Node',
+    -- Other classes/utilities
+    'Ferret/Targetable', 'Ferret/Timer', 'Ferret/Sandtimer', 'Ferret/Pathfinding',
+    -- Base extension
+    'Ferret/Extensions/Extension',
+    -- Addons
+    'Ferret/Addons/Addons',
+    -- Actions
+    'Ferret/Actions/Actions',
+}
+
+for _, path in ipairs(require_list) do
+    require(path)
+end
+
+-- For those modules that you want to assign to globals (if needed):
+Character          = require('Ferret/Character')
+Mount              = require('Ferret/Mount')
+World              = require('Ferret/World')
+Gathering          = require('Ferret/Gathering')
+GatherBuddy        = require('Ferret/GatherBuddy')
+SpearfishingHelper = require('Ferret/SpearfishingHelper')
+IO                 = require('Ferret/IO')
+Logger             = require('Ferret/Logger')
+Debug              = require('Ferret/Debug')
+Table              = require('Ferret/Table')
+String             = require('Ferret/String')
+Wait               = require('Ferret/Wait')
+EventManager       = require('Ferret/EventManager')
+RequestManager     = require('Ferret/RequestManager')
+ExtensionManager   = require('Ferret/ExtensionManager')

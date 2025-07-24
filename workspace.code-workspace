@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "libs"
+		},
+		{
+			"path": "Images"
+		},
+		{
+			"path": "SND"
+		},
+	],
+	"settings": { },
+	"extensions": {
+		"recommendations": ["sumneko.lua"]
+	},
+
+	"Library": [
+		{
+			"path": "../libs/"
+		}
+	]
+}
